@@ -1,0 +1,40 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{ listing.title }}</h2>
+    <br><br>
+    <p>Category: <a href="{% url 'category' listing.category %}">{{ listing.category }}</a></p>
+    <br><br>
+    <img alt="Image of {{ listing.title }}" href="{{ listing.image_url }}">
+    <br><br>
+    <p>{{ listing.description }}</p>
+    <br><br>
+    <p>Starting bid: $ {{ listing.starting_bid }}</p>
+    <br><br>
+    <p>Subsequent bids:</p>
+    <ul>
+        {% for bid in listing.bids %}
+            <li>{{ bid.amount }} ({{ bid.user }})</li>
+        {% empty %}
+            <li>No bids yet. Be the first to bid!</li>
+        {% endfor %}
+    </ul>
+    <br><br>
+    {% if request.user.is_authenticated %}
+        {% if request.user not in listing.watchers %}
+            <form action="{% url 'watch' %}" method="post">
+                {% csrf_token %}
+                <input name="user" type="hidden" value="{{ request.user.id }}">
+                <input name="listing" type="hidden" value="{{ listing.id }}">
+                <input type="submit" value="Add to Watchlist">
+            </form>
+        {% else %}
+            <form action="{% url 'unwatch' %}" method="post">
+                {% csrf_token %}
+                <input name="user" type="hidden" value="{{ request.user.id }}">
+                <input name="listing" type="hidden" value="{{ listing.id }}">
+                <input type="submit" value="Remove from Watchlist">
+            </form>
+        {% endif %}
+    {% endif %}    
+{% endblock %}
