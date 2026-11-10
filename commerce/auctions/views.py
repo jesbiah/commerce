@@ -1,6 +1,6 @@
-from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.forms import ModelForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -8,14 +8,11 @@ from django.urls import reverse
 from .models import Listing, User
 
 
-# THERE HAS TO BE A STREAMLINED WAY TO MAKE A FORM FROM A MODEL
-class NewListingForm(forms.Form):
-    title = forms.CharField()
-    description = forms.CharField()
-    starting_bid = forms.IntegerField()
-    image_url = forms.CharField(max_length=256)
-    # category = forms.ForeignKey(AuctionCategory, related_name='listings')
-
+class ListingForm(ModelForm):
+    class Meta:
+        model = Listing
+        fields = ['title', 'description', 'starting_bid', 'image_url', 'category']
+    
 
 def index(request):
     listings = Listing.objects.all()
@@ -24,22 +21,38 @@ def index(request):
     })
 
 
-def create_listing(request):
+def create(request):
     
     # Check if POST
     if request.method == 'POST':
 
         # Validate form
-        form = NewListingForm(request.POST)
+        form = ListingForm(request.POST)
         if form.is_valid():
 
-            # Save form data--AGAIN THERE HAS TO BE A STREAMLINED WAY
+            # Save form data
+            form.save()
 
             # Redirect to new listing
             return HttpResponseRedirect(reverse('listing')) #, args=(,)
+        else:
+            message = 'Invalid entry'
+            return render(request, 'auctions/create.html', {
+                'form': form,
+                'message': message
+            })
 
     # Else render template
-    return render(request, 'auctions/create.html')
+    return render(request, 'auctions/create.html', {
+        'form': ListingForm()
+    })
+
+
+def listing(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    return render(request, 'autions/listing.html', {
+        'listing': listing
+    })
 
 
 def login_view(request):
@@ -100,3 +113,13 @@ def unwatch(request):
 
 def watch(request):
     pass
+
+
+def watchlist(request):
+    if request.user.is_authenticated:
+
+        # Show watchlist page
+        return render(request, 'auctions/watchlist.html')
+
+    # Else, redirect to login page
+    return HttpResponseRedirect(reverse('login'))

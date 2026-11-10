@@ -16,8 +16,8 @@ class Listing(models.Model):
 
     # There should be a way to get current price
     starting_bid = models.IntegerField()
-    image_url = models.CharField(max_length=256)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='listings')
+    image_url = models.CharField(max_length=256, blank=True)
+    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE, related_name='listings')
 
     def __str__(self):
         return f'{self.title} ({self.category})'
