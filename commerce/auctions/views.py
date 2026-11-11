@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Listing, User
+from .models import Category, Listing, User
 
 
 class ListingForm(ModelForm):
@@ -18,6 +18,19 @@ def index(request):
     listings = Listing.objects.all()
     return render(request, "auctions/index.html", {
         'listings': listings,
+    })
+
+
+def category(request, category_name):
+    category = Category.objects.get(name=category_name)
+    return render(request, 'auctions/category.html', {
+        'category': category
+    })
+
+
+def categories(request):
+    return render(request, 'auctions/categories.html', {
+        'categories': Category.objects.all()
     })
 
 
